@@ -1,5 +1,3 @@
-import java.util.Random;
-
 /*************************************************************************
  * Name:
  *  This is a template file for GuitarString.java. It lists the constructors
@@ -7,19 +5,20 @@ import java.util.Random;
  *  to do.
  *
  *  Note: it won't compile until you fill in the constructors and methods
- *        (or at least commment out the ones whose return type is non-void).
+ *        (or at least comment out the ones whose return type is non-void).
  *
  *****************************************************************************/
-
 public class GuitarString {
 
     private RingBuffer buffer; // ring buffer
-    private int tics;
+    private int SAMPLING_RATE = 41000;
+    private double N;
+    private int count;
 
     // create a guitar string of the given frequency
     public GuitarString(double frequency) {
-        double ff = 44100 / frequency;
-        int n = (int) Math.ceil(ff);
+        N = SAMPLING_RATE / frequency;
+        int n = (int) (Math.round(N));
         buffer = new RingBuffer(n);
         for (int i = 0; i < n; i++) {
             buffer.enqueue(0);
@@ -36,33 +35,29 @@ public class GuitarString {
 
     // pluck the guitar string by replacing the buffer with white noise
     public void pluck() {
-        Random r = new Random();
-        for (int i = 0; i < buffer.size(); i++) {
+        for (int i = 0; i < N; i++) {
             buffer.dequeue();
-            buffer.enqueue(r.nextDouble() - 0.5);
+            buffer.enqueue(Math.random() - 0.5);
         }
     }
 
     // advance the simulation one time step
     public void tic() {
-        double f = buffer.dequeue();
-        double s = buffer.peek();
-        buffer.enqueue(.994 * .5 * (f + s));
-        tics++;
+        double first = buffer.peek();
+        buffer.dequeue();
+        double second = buffer.peek();
+        buffer.enqueue(0.994 * ((first + second) / 2));
+        count++;
     }
 
     // return the current sample
     public double sample() {
-        //YOUR CODE HERE
-
-        return 0.0; // dummy return statement so the code compiles
+        return buffer.peek();
     }
 
     // return number of times tic was called
     public int time() {
-        // YOUR CODE HERE
-
-        return 0; // dummy return statement so the code compiles
+        return count;
     }
 
     public static void main(String[] args) {
